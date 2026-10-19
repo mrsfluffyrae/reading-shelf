@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+"""
+generate_card.py
+Renders a cozy, aesthetic library & listening card as an SVG.
+"""
+
+from datetime import datetime
+import html
+import json
+import os
+
+
+def sanitize(text: str) -> str:
+    """Escapes XML entities so your card never breaks on special characters."""
+    return html.escape(str(text))
+
+
+def create_svg():
+    data_path = os.path.join("data", "shelf.json")
+
+    # Fallback data if file is missing
+    defaults = {
+        "reading": {
+            "title": "The Invisible Life of Addie LaRue",
+            "author": "V.E. Schwab",
+            "status": "Chapter 24 / cozying up",
+            "rating": "★★★★★",
+        },
+        "listening": {
+            "track": "Starry Night",
+            "artist": "Alexis Ffrench",
+            "mood": "dreamy piano vibes",
+        },
+        "little_thought": "Remember to drink some warm tea and stretch today ✿",
+    }
+
+    if os.path.exists(data_path):
+        with open(data_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    else:
+        data = defaults
+
+    today_str = datetime.now().strftime("%d %b %Y").upper()
+
+    title = sanitize(data.get("reading", {}).get("title", ""))
+    author = sanitize(data.get("reading", {}).get("author", ""))
+    status = sanitize(data.get("reading", {}).get("status", ""))
+    rating = sanitize(data.get("reading", {}).get("rating", ""))
+
+    track = sanitize(data.get("listening", {}).get("track", ""))
+    artist = sanitize(data.get("listening", {}).get("artist", ""))
+    mood = sanitize(data.get("listening", {}).get("mood", ""))
+
+    thought = sanitize(data.get("little_thought", ""))
+
+    svg_content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="680" height="340" viewBox="0 0 680 340" fill="none">
+  <defs>
+    <!-- Soft Girly Gradient: Blush Pink -> Lavender Mist -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF0F5" />
+      <stop offset="50%" stop-color="#FDF2F8" />
+      <stop offset="100%" stop-color="#F3E8FF" />
+    </linearGradient>
+
+    <!-- Card Inner Glow -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#FAFAFA" stop-opacity="0.8" />
+    </linearGradient>
+
+    <filter id="softShadow" x="-6" y="-6" width="692" height="352" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#831843" flood-opacity="0.08" />
+    </filter>
+
+    <style>
+      .stamp-text {{ font-family: 'Courier New', Courier, monospace; font-size: 11px; fill: #9D174D; font-weight: bold; letter-spacing: 1.5px; }}
+      .header-title {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif; font-size: 15px; font-weight: 700; fill: #831843; }}
+      .label-text {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; fill: #9333EA; text-transform: uppercase; letter-spacing: 0.8px; }}
+      .main-text {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; fill: #1F2937; }}
+      .sub-text {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; fill: #6B7280; }}
+      .badge-text {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; fill: #166534; }}
+      .sparkle {{ fill: #F472B6; }}
+      .star-matcha {{ fill: #4ADE80; }}
+    </style>
+  </defs>
+
+  <!-- Base Board with Drop Shadow -->
+  <rect x="10" y="10" width="660" height="320" rx="24" fill="url(#bgGrad)" stroke="#FBCFE8" stroke-width="2" filter="url(#softShadow)" />
+
+  <!-- Dotted Inner Border -->
+  <rect x="22" y="22" width="636" height="296" rx="16" fill="none" stroke="#E9D5FF" stroke-width="1.5" stroke-dasharray="4 4" />
+
+  <!-- Decorative Sparkles -->
+  <path class="sparkle" d="M 46 38 Q 46 45 39 45 Q 46 45 46 52 Q 46 45 53 45 Q 46 45 46 38 Z" />
+  <path class="star-matcha" d="M 632 42 Q 632 47 627 47 Q 632 47 632 52 Q 632 47 637 47 Q 632 47 632 42 Z" opacity="0.8" />
+  <circle cx="616" cy="38" r="2" fill="#F472B6" />
+  <circle cx="58" cy="56" r="1.5" fill="#C084FC" />
+
+  <!-- Top Header Bar -->
+  <g transform="translate(42, 38)">
+    <text x="0" y="14" class="header-title">✿ Rachael's Cozy Logbook</text>
+    
+    <!-- Vintage Checkout Stamp -->
+    <rect x="440" y="-4" width="150" height="26" rx="6" fill="#FCE7F3" stroke="#F43F5E" stroke-width="1.2" stroke-dasharray="3 2" transform="rotate(-1.5 515 9)" />
+    <text x="454" y="13" class="stamp-text" transform="rotate(-1.5 515 9)">RETURN: {today_str}</text>
+  </g>
+
+  <!-- Left Card: Currently Reading (Library Index Card Style) -->
+  <g transform="translate(42, 78)">
+    <rect x="0" y="0" width="285" height="175" rx="14" fill="url(#cardGrad)" stroke="#FBCFE8" stroke-width="1.2" />
+    
+    <!-- Pastel Pink Bookmark Notch -->
+    <path d="M 24 0 L 24 16 L 31 11 L 38 16 L 38 0 Z" fill="#F472B6" opacity="0.85" />
+    
+    <text x="50" y="16" class="label-text">CURRENTLY READING</text>
+    
+    <text x="24" y="52" class="main-text">{title}</text>
+    <text x="24" y="74" class="sub-text">by {author}</text>
+    
+    <!-- Progress & Rating Badges -->
+    <g transform="translate(24, 98)">
+      <rect x="0" y="0" width="170" height="24" rx="12" fill="#FDF2F8" stroke="#F472B6" stroke-width="0.8" />
+      <text x="12" y="16" class="badge-text" fill="#9D174D" font-size="11px">📖 {status}</text>
+    </g>
+
+    <text x="24" y="150" font-family="sans-serif" font-size="13px" fill="#FB7185">{rating}</text>
+  </g>
+
+  <!-- Right Card: Now Playing (Cassette / Mini Player Style) -->
+  <g transform="translate(353, 78)">
+    <rect x="0" y="0" width="285" height="175" rx="14" fill="url(#cardGrad)" stroke="#E9D5FF" stroke-width="1.2" />
+    
+    <!-- Matcha Green Accent Dot -->
+    <circle cx="28" cy="18" r="5" fill="#86EFAC" stroke="#22C55E" stroke-width="1.5" />
+    <text x="44" y="21" class="label-text" fill="#7E22CE">ON REPEAT</text>
+    
+    <text x="24" y="56" class="main-text">♫ {track}</text>
+    <text x="24" y="76" class="sub-text">{artist}</text>
+    
+    <!-- Sound Wave Bars (Matcha & Lilac) -->
+    <g transform="translate(24, 96)">
+      <rect x="0" y="8" width="4" height="14" rx="2" fill="#A855F7" />
+      <rect x="8" y="2" width="4" height="20" rx="2" fill="#4ADE80" />
+      <rect x="16" y="5" width="4" height="17" rx="2" fill="#F472B6" />
+      <rect x="24" y="0" width="4" height="22" rx="2" fill="#A855F7" />
+      <rect x="32" y="6" width="4" height="16" rx="2" fill="#4ADE80" />
+      <rect x="40" y="10" width="4" height="12" rx="2" fill="#F472B6" />
+      <text x="56" y="16" class="sub-text" font-style="italic">"{mood}"</text>
+    </g>
+
+    <!-- Mini cassette reel decorations -->
+    <g transform="translate(200, 126)" opacity="0.65">
+      <circle cx="16" cy="16" r="14" fill="#F3E8FF" stroke="#C084FC" stroke-width="1.5" />
+      <circle cx="16" cy="16" r="4" fill="#A855F7" />
+      <circle cx="52" cy="16" r="14" fill="#F3E8FF" stroke="#C084FC" stroke-width="1.5" />
+      <circle cx="52" cy="16" r="4" fill="#A855F7" />
+    </g>
+  </g>
+
+  <!-- Bottom Floating Note / Thought of the Day (Soft Matcha / Herb Green) -->
+  <g transform="translate(42, 266)">
+    <rect x="0" y="0" width="596" height="38" rx="10" fill="#DCFCE7" fill-opacity="0.75" stroke="#BBF7D0" stroke-width="1" />
+    <circle cx="20" cy="19" r="3.5" fill="#22C55E" />
+    <text x="34" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12px" font-weight="500" fill="#166534">
+      {thought}
+    </text>
+  </g>
+</svg>
+"""
+
+    output_dir = "assets"
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "card.svg")
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(svg_content.strip())
+
+    print(f"✓ Beautiful SVG card regenerated successfully at {output_path}")
+
+
+if __name__ == "__main__":
+    create_svg()
