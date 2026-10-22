@@ -47,7 +47,7 @@
     
     <!-- Vintage Checkout Stamp -->
     <rect x="440" y="-4" width="150" height="26" rx="6" fill="#FCE7F3" stroke="#F43F5E" stroke-width="1.2" stroke-dasharray="3 2" transform="rotate(-1.5 515 9)" />
-    <text x="454" y="13" class="stamp-text" transform="rotate(-1.5 515 9)">RETURN: 21 OCT 2026</text>
+    <text x="454" y="13" class="stamp-text" transform="rotate(-1.5 515 9)">RETURN: 22 OCT 2026</text>
   </g>
 
   <!-- Left Card: Currently Reading (Library Index Card Style) -->
